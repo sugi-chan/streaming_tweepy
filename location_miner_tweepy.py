@@ -23,20 +23,17 @@ from time import sleep
 #print "Stöcker"                 # fails
 
 #Variables that contains the user credentials to access Twitter API
-access_token = "836555563-c7sobiPA90KCs79QC9mMMPb7PUHJAGM9PvUvJt2o"
-access_token_secret = "ZOME6MRuQtHyDB1Gsoa2rjX4LfYwXrbDvkuU3eNy4Dq6v"
-consumer_key = "dK71YWjKQbZyOPdePbgNGDNxT"
-consumer_secret = "DpkM7f15s3sHfZD6SL9n5gf0zAEoSO8anVIsDmcwLGa92iPQSE"
+access_token = "XXXX"
+access_token_secret = "XXXXXX"
+consumer_key = "XXXXXXXXXXX"
+consumer_secret = "XXXXXXXXXX"
 
+#currently set to DC
+bounding_box = [-77.119759,38.7916449,-76.909393,38.995548]
 
 #This is a basic listener that just prints received tweets to stdout.
 
 class CustomStreamListener(tweepy.StreamListener):
-
-
-    #def on_data(self, data):
-    #    print data
-    #    return True
 
 
 
@@ -46,22 +43,24 @@ class CustomStreamListener(tweepy.StreamListener):
         #print status.author.screen_name, status.created_at, status.text
         if (status.coordinates is not None):
             print status.author.screen_name, status.created_at, status.text, status.geo
-
+            
+            #have it appending to a file... which exists within my directory, may have to write it
+            # you could definatly just have it write if the file doesnt exist, but this is fine for now
             with open('test_washington_Dc.csv', 'ab') as f:
-                #f.write( INSERT THINGS MAYBE
                 writer = csv.writer(f)
-
+                
+                #could do this better, but is fine for now
                 screen_name = status.author.screen_name.encode("utf-8")
                 s_id = status.id_str#.encode("utf-8")
                 geo = status.geo#.encode("utf-8")
                 txt =  status.text.encode("utf-8")
                 source =status.source.encode("utf-8")
                 cord = status.coordinates
-                time = status .created_at
+                time = status.created_at
                 data = status
                 writer.writerow([screen_name,s_id, time,txt,source,geo,cord,data])
 
-
+    # inserted 5min sleep timers for time outs and errors, will hopefully avoid bot being throttled
     def on_error(self, status_code):
         print >> sys.stderr, 'Encountered error with status code:', status_code
         sleep(5*60)
@@ -76,16 +75,17 @@ class CustomStreamListener(tweepy.StreamListener):
 if __name__ == '__main__':
 
 
-    #with open('presidential_debate_10_7_17.csv', 'wb') as f:
-    #    writer = csv.writer(f)
-            #This handles Twitter authetification and the connection to Twitter Streaming API
+    #This handles Twitter authetification and the connection to Twitter Streaming API
     l = CustomStreamListener()
     auth = OAuthHandler(consumer_key, consumer_secret)
     auth.set_access_token(access_token, access_token_secret)
 
     stream = Stream(auth, l)
+    # can do a filter on terms, but it wont filter on both... but you could probably have it filter with
+    # conditional statements
     #stream.filter(track=['python', 'javascript', 'ruby'])
-    stream.filter(locations=[-77.119759,38.7916449,-76.909393,38.995548])
+    # just filter down to a geographic location
+    stream.filter(locations=bounding_box)
 
 
 
